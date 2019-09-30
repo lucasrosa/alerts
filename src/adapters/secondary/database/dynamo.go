@@ -34,8 +34,16 @@ func (r *alertsRepository) GetActive() ([]alerts.Alert, error) {
 
 	var queryInput = &dynamodb.QueryInput{
 		TableName: aws.String(os.Getenv("TABLE_NAME")),
-		IndexName: aws.String("start"),
+		IndexName: aws.String("alertid"),
 		KeyConditions: map[string]*dynamodb.Condition{
+			"start": {
+				ComparisonOperator: aws.String("GT"),
+				AttributeValueList: []*dynamodb.AttributeValue{
+					{
+						N: aws.String("50"),
+					},
+				},
+			},
 			"end": {
 				ComparisonOperator: aws.String("EQ"),
 				AttributeValueList: []*dynamodb.AttributeValue{

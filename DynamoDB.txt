@@ -1,0 +1,72 @@
+Mandatory reads:
+https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html
+https://read.acloud.guru/why-amazon-dynamodb-isnt-for-everyone-and-how-to-decide-when-it-s-for-you-aefc52ea9476
+https://blog.yugabyte.com/11-things-you-wish-you-knew-before-starting-with-dynamodb/
+
+https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-time-series.html
+
+SELECT * from alerts
+    WHERE start <= now()
+        AND (
+            end = null
+            OR end > now()
+        )
+
+
+Partition Key: start date in form YYYYMMDD
+Sort Key: start date in unix timestamp as INT
+
+# Command 1
+aws dynamodb create-table \
+    --table-name alerts3 \
+    --attribute-definitions \
+        AttributeName=startdate,AttributeType=N \
+        AttributeName=starttimestamp,AttributeType=N \
+    --key-schema AttributeName=startdate,KeyType=HASH AttributeName=starttimestamp,KeyType=RANGE \
+    --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1
+
+# Result
+"TableArn": "arn:aws:dynamodb:us-east-1:587998505259:table/alerts3",
+
+# Command 2
+# Inserting an alert 
+# starting in 09/28/2019 @ 10:00pm (UTC) and 
+# ending in 09/28/2019 @ 12:00pm (UTC)
+
+aws dynamodb put-item \
+--table-name alerts3  \
+--item \
+    '{"startdate": {"N": "20190928"}, "starttimestamp": {"N": "1569664800"}, "end": {"N": "1569672000"}}' \
+--return-consumed-capacity TOTAL
+
+# Result
+{
+    "ConsumedCapacity": {
+        "CapacityUnits": 1.0,
+        "TableName": "alerts3"
+    }
+}
+
+# Command 3
+# Inserting an alert 
+# starting in 09/29/2019 @ 10:00pm (UTC) and 
+# not ending
+
+aws dynamodb put-item \
+--table-name alerts3  \
+--item \
+    '{"startdate": {"N": "20190929"}, "starttimestamp": {"N": "1569751200"}}' \
+--return-consumed-capacity TOTAL
+
+# Result
+{
+    "ConsumedCapacity": {
+        "CapacityUnits": 1.0,
+        "TableName": "alerts3"
+    }
+}
+
+# Command 4 
+aws dynamodb query --table-name alerts3 --key-conditions file://testquery.json
+
+

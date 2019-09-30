@@ -11,7 +11,7 @@ provider:
 #  stage: dev
   region: us-east-1
   environment:
-        TABLE_NAME: alerts-${opt:stage, self:provider.stage}
+        TABLE_NAME: alerts2-${opt:stage, self:provider.stage}
   iamRoleStatements:
     - Effect: "Allow"
       Action:
@@ -22,10 +22,10 @@ provider:
         - dynamodb:PutItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
-      Resource:
-        - Fn::GetAtt:
-          - AlertsDynamoDbTable
-          - Arn
+      Resource: "arn:aws:dynamodb:us-east-1:*:*"
+        #- Fn::GetAtt:
+        #  - AlertsDynamoDbTable
+        #  - Arn
 
 package:
  exclude:
@@ -49,16 +49,16 @@ resources:
       DeletionPolicy: Retain
       Properties:
         AttributeDefinitions:
-          - AttributeName: id
+          - AttributeName: alertid
             AttributeType: S  
           - AttributeName: start
             AttributeType: N
         KeySchema:
-          - AttributeName: id
+          - AttributeName: alertid
             KeyType: HASH
           - AttributeName: start
             KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-        TableName: 'alerts-${opt:stage, self:provider.stage}'
+        TableName: 'alerts2-${opt:stage, self:provider.stage}'

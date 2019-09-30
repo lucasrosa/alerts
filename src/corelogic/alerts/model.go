@@ -2,7 +2,7 @@ package alerts
 
 // Alerts represents
 type Alert struct {
-	ID    string `json:"id"`
-	Start int    `json:"start"`
-	End   int    `json:"end"`
+	AlertID string `dynamo:"alertid" json:"id"`
+	Start   int    `dynamo:"start" json:"start"`
+	End     int    `dynamo:"end" json:"end"`
 }
